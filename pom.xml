@@ -11,15 +11,18 @@
     </parent>
 
     <groupId>com.chumbok</groupId>
-    <artifactId>security</artifactId>
+    <artifactId>chumbok-security</artifactId>
     <version>1.0.0-SNAPSHOT</version>
     <packaging>jar</packaging>
 
     <name>Chumbok Security</name>
     <description>Provided abstract security config and JWT Auth token consumer.</description>
 
-    <properties>
-    </properties>
+    <scm>
+        <connection>scm:git:https://github.com/ChumbokIT/${project.artifactId}.git</connection>
+        <developerConnection>scm:git:https://github.com/ChumbokIT/${project.artifactId}.git</developerConnection>
+        <url>https://github.com/ChumbokIT/${project.artifactId}</url>
+    </scm>
 
     <dependencies>
 
