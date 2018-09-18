@@ -3,7 +3,9 @@ package com.chumbok.security;
 import sun.security.rsa.RSAPrivateCrtKeyImpl;
 import sun.security.rsa.RSAPublicKeyImpl;
 
+import java.net.URL;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.security.PrivateKey;
 import java.security.PublicKey;
@@ -21,7 +23,7 @@ public class EncryptionKeyUtil {
      */
     public PublicKey loadPublicKey(String path) {
         try {
-            byte[] keyBytes = Files.readAllBytes(Paths.get(path));
+            byte[] keyBytes = getBytes(path);
             return new RSAPublicKeyImpl(keyBytes);
         } catch (Exception ex) {
             throw new RuntimeException("Could not load PublicKey from " + path, ex);
@@ -37,11 +39,25 @@ public class EncryptionKeyUtil {
      */
     public PrivateKey loadPrivateKey(String path) {
         try {
-            byte[] keyBytes = Files.readAllBytes(Paths.get(path));
+            byte[] keyBytes = getBytes(path);
             return RSAPrivateCrtKeyImpl.newKey(keyBytes);
         } catch (Exception ex) {
             throw new RuntimeException("Could not load PrivateKey from " + path, ex);
         }
     }
 
+    private byte[] getBytes(String pathString) throws Exception {
+        Path path;
+        if (pathString.startsWith("classpath:")) {
+            String originalPath = pathString.substring(10);
+            URL url = getClass().getClassLoader().getResource(originalPath);
+            if (url == null) {
+                throw new RuntimeException("Could not load PublicKey from " + pathString);
+            }
+            path = Paths.get(url.toURI());
+        } else {
+            path = Paths.get(pathString);
+        }
+        return Files.readAllBytes(path);
+    }
 }
