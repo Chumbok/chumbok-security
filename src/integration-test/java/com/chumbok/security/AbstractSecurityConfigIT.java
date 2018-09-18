@@ -43,7 +43,7 @@ public class AbstractSecurityConfigIT {
     /**
      * JWT auth token created with private_key.der
      */
-    private final String AUTH_TOKEN = "eyJhbGciOiJSUzI1NiJ9.eyJzdWIiOiJhZG1pbkBjaHVtYm9rLmNvbSIsImRvbWFpbiI6ImNodW1ib2siLCJzY29wZXMiOlsiUk9MRV9TVVBFUkFETUlOIl0sImlzcyI6IkNodW1ib2siLCJpYXQiOjE1MzY2MTMwNDAsImV4cCI6MTk1MzY2MTMwNDB9.BjqrMJTEAuoaw2laeiNqVYdgtgf4_WJlmK-vh7Lq70G04-QztW0bYGsptUatKxnfVWsEr0I6726xo__9L9yvBN4d7pd3N7v0LKu05mfhY6-WMkg0N-VM_4BpZ7Y-sgb-07_pEfVi8wVj3iER0IHPXJOvo9xL1gXmsjox0dTveW_qndd4yLtZ7Aq4b9Kfrw3nGnjujoK3URf2fuahlHlaMoJFh7tVrHKQ3D3QjdFdNBvtXMGzuBnIcc943HIxjXBzS3C92j5scMT7wLoefVABGhQbPXmmfzcw2ASJAOCg2BJy-ArA3jCM4Y1dTEAlKpwC-ssIbMH5EuKNFK4Zxly9mw";
+    private final String AUTH_TOKEN = "eyJhbGciOiJSUzI1NiJ9.eyJzdWIiOiJhZG1pbiIsIm9yZyI6IkNodW1ib2siLCJ0ZW5hbnQiOiJDaHVtYm9rIiwic2NvcGVzIjpbIlJPTEVfU1VQRVJBRE1JTiJdLCJpc3MiOiJDaHVtYm9rIiwiaWF0IjoxNTM3MjkxMzQ1LCJleHAiOjI1MjcyOTEzNDV9.EvprrNSe62UphCBivgOH2lcaxHtBy449-kazyLm1HYCS2dYcHSqY1QOsRJnV7PGaeHofHD4WnJfIkQbkZ5_hEL0T5dUBdSbVuNhe-aoSJH_UpUwPyRMcy0LH5IVxfS7hVoq67IvuPDHmwDM6gdo6NjshNi9po3EEhmVMNKLlzNCu62bu8jXVtpekTNRTmlDHiGZToKjYBqafaAEGzGktb7GzBwbqURum2lWF0Wabk4q8ZYJFpV7qr3gkklkSCqEYhy-a9DP3CFDl_zEfg168ejKjCpNRYhFEWtg90t6iH7iMgd2uDZnEHgbBbLpc5VXWbx4xJlMbCB4fkRZ8lHl4wQ";
 
     @Autowired
     private MockMvc mockMvc;
@@ -96,7 +96,7 @@ public class AbstractSecurityConfigIT {
                 .cookie(new Cookie("Authorization", "Bearer+" + AUTH_TOKEN)))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8_VALUE))
-                .andExpect(jsonPath("$.principle").value("chumbok13admin@chumbok.com"))
+                .andExpect(jsonPath("$.principle").value("Chumbok13Chumbok13admin"))
                 .andExpect(jsonPath("$.isAuthenticated").value("true"))
                 .andExpect(jsonPath("$.authorities").value("[ROLE_SUPERADMIN]"))
                 .andDo(print());
@@ -124,6 +124,22 @@ public class AbstractSecurityConfigIT {
         @Override
         protected void setAuthTokenParser(AuthTokenParser authTokenParser) {
             super.setAuthTokenParser(authTokenParser);
+        }
+
+        @Bean
+        public SecurityProperties securityProperties() {
+            return SecurityProperties.builder()
+                    .enable(true)
+                    .assertOrgWith("Chumbok")
+                    .assertTenant(true)
+                    .assertTenantWith("Chumbok")
+                    .build();
+        }
+
+        @Autowired
+        @Override
+        protected void setSecurityProperties(SecurityProperties securityProperties) {
+            super.setSecurityProperties(securityProperties);
         }
     }
 

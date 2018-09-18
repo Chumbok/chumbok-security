@@ -6,6 +6,7 @@ import io.jsonwebtoken.lang.Assert;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.util.StringUtils;
 import org.springframework.web.filter.GenericFilterBean;
@@ -30,16 +31,19 @@ public class AuthTokenConsumerFilter extends GenericFilterBean {
 
     private final AuthTokenExtractor authTokenExtractor;
     private final AuthTokenParser authTokenParser;
+    private final SecurityProperties securityProperties;
 
     /**
      * AuthTokenConsumerFilter constructor with default AuthTokenExtractor.
      *
      * @param authTokenParser
      */
-    public AuthTokenConsumerFilter(AuthTokenParser authTokenParser) {
+    public AuthTokenConsumerFilter(AuthTokenParser authTokenParser, SecurityProperties securityProperties) {
         this.authTokenExtractor = new AuthTokenExtractor();
         this.authTokenParser = authTokenParser;
+        this.securityProperties = securityProperties;
         Assert.notNull(authTokenParser, "authTokenParser can not be null.");
+        Assert.notNull(securityProperties, "securityProperties can not be null.");
     }
 
     /**
@@ -48,11 +52,14 @@ public class AuthTokenConsumerFilter extends GenericFilterBean {
      * @param authTokenExtractor
      * @param authTokenParser
      */
-    public AuthTokenConsumerFilter(AuthTokenExtractor authTokenExtractor, AuthTokenParser authTokenParser) {
+    public AuthTokenConsumerFilter(AuthTokenExtractor authTokenExtractor, AuthTokenParser authTokenParser,
+                                   SecurityProperties securityProperties) {
         this.authTokenExtractor = authTokenExtractor;
         this.authTokenParser = authTokenParser;
+        this.securityProperties = securityProperties;
         Assert.notNull(authTokenExtractor, "authTokenExtractor can not be null.");
         Assert.notNull(authTokenParser, "authTokenParser can not be null.");
+        Assert.notNull(securityProperties, "securityProperties can not be null.");
     }
 
     /**
@@ -94,9 +101,15 @@ public class AuthTokenConsumerFilter extends GenericFilterBean {
             return;
         }
 
-        String domain = (String) claimsJws.get().getBody().get("domain");
-        if (domain == null || StringUtils.isEmpty(domain)) {
-            log.debug("Could not found domain in claimsJws. Authentication is NOT set in SecurityContext.");
+        String org = (String) claimsJws.get().getBody().get("org");
+        if (org == null || StringUtils.isEmpty(org)) {
+            log.debug("Could not found org in claimsJws. Authentication is NOT set in SecurityContext.");
+            return;
+        }
+
+        String tenant = (String) claimsJws.get().getBody().get("tenant");
+        if (org == null || StringUtils.isEmpty(org)) {
+            log.debug("Could not found tenant in claimsJws. Authentication is NOT set in SecurityContext.");
             return;
         }
 
@@ -112,8 +125,42 @@ public class AuthTokenConsumerFilter extends GenericFilterBean {
             return;
         }
 
-        String principal = domain.trim() + String.valueOf(Character.LINE_SEPARATOR) + username.trim();
-        log.debug("Domain and Username found in claimsJws. Prepared principal - %s", principal);
+        if (!securityProperties.isEnable()) {
+            log.debug("Attribute 'enable' in securityProperties is set to false. "
+                    + "Authentication is NOT set in SecurityContext.");
+            return;
+        }
+
+        if (securityProperties.getAssertOrgWith() == null || StringUtils.isEmpty(securityProperties.getAssertOrgWith())) {
+            log.debug("Attribute 'assertOrgWith' in securityProperties is set to null or empty. "
+                    + "Authentication is NOT set in SecurityContext.");
+            return;
+        }
+
+        if (!securityProperties.getAssertOrgWith().equals(org)) {
+            log.debug("Access token claim 'org' is not matched with attribute 'assertOrgWith' in securityProperties. "
+                    + "Authentication is NOT set in SecurityContext.");
+            return;
+        }
+
+        if(securityProperties.isAssertTenant() &&
+                (securityProperties.getAssertTenantWith() == null ||
+                        StringUtils.isEmpty(securityProperties.getAssertTenantWith()))) {
+            log.debug("Attribute 'assertTenant' in securityProperties is set to true, but Attribute 'assertTenantWith' "
+                    + "is null or empty. Authentication is NOT set in SecurityContext.");
+            return;
+        }
+
+        if (securityProperties.isAssertTenant() && !securityProperties.getAssertTenantWith().equals(tenant)) {
+            log.debug("Access token claim 'tenant' is not matched with attribute 'assertTenantWith' in "
+                    + "securityProperties. Authentication is NOT set in SecurityContext.");
+            return;
+        }
+
+        String principal = org.trim() + String.valueOf(Character.LINE_SEPARATOR)
+                + tenant.trim() + String.valueOf(Character.LINE_SEPARATOR)
+                + username.trim();
+        log.debug("Org, Tenant and Username found in claimsJws. Prepared principal - %s", principal);
 
         Collection<GrantedAuthority> authorities = scopes.stream()
                 .map(authority -> new SimpleGrantedAuthority(authority))

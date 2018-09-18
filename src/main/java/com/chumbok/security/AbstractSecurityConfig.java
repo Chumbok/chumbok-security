@@ -37,6 +37,7 @@ public abstract class AbstractSecurityConfig extends WebSecurityConfigurerAdapte
             new AntPathRequestMatcher("/version"));
 
     private AuthTokenParser authTokenParser;
+    private SecurityProperties securityProperties;
     private UserDetailsService userDetailsService;
 
     public AbstractSecurityConfig() {
@@ -84,13 +85,19 @@ public abstract class AbstractSecurityConfig extends WebSecurityConfigurerAdapte
                 .sessionManagement()
                 .sessionCreationPolicy(SessionCreationPolicy.STATELESS);
 
-        if (authTokenParser != null) {
-            http.addFilterBefore(new AuthTokenConsumerFilter(authTokenParser),
-                    AbstractPreAuthenticatedProcessingFilter.class);
-            log.debug("authTokenParser bean is set. " +
-                    "AuthTokenConsumerFilter is set in Filter chain before AbstractPreAuthenticatedProcessingFilter");
-        } else {
+        if (authTokenParser == null) {
             log.debug("authTokenParser bean is NOT set. AuthTokenConsumerFilter is NOT set in Filter chain.");
+        }
+
+        if (securityProperties == null) {
+            log.debug("securityProperties bean is NOT set. AuthTokenConsumerFilter is NOT set in Filter chain.");
+        }
+
+        if (authTokenParser != null && securityProperties!= null) {
+            http.addFilterBefore(new AuthTokenConsumerFilter(authTokenParser, securityProperties),
+                    AbstractPreAuthenticatedProcessingFilter.class);
+            log.debug("authTokenParser and securityProperties bean is set. " +
+                    "AuthTokenConsumerFilter is set in Filter chain before AbstractPreAuthenticatedProcessingFilter");
         }
 
         http.authorizeRequests().anyRequest().authenticated();
@@ -143,5 +150,15 @@ public abstract class AbstractSecurityConfig extends WebSecurityConfigurerAdapte
     protected void setAuthTokenParser(AuthTokenParser authTokenParser) {
         Assert.notNull(authTokenParser, "authTokenParser cannot be null");
         this.authTokenParser = authTokenParser;
+    }
+
+    /**
+     * Allow to set SecurityProperties.
+     *
+     * @param securityProperties
+     */
+    protected void setSecurityProperties(SecurityProperties securityProperties) {
+        Assert.notNull(securityProperties, "securityProperties cannot be null");
+        this.securityProperties = securityProperties;
     }
 }
