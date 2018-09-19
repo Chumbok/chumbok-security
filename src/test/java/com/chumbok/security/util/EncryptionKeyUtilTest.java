@@ -1,4 +1,4 @@
-package com.chumbok.security;
+package com.chumbok.security.util;
 
 import org.junit.Rule;
 import org.junit.Test;

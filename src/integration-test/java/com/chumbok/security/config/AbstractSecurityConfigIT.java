@@ -1,5 +1,8 @@
-package com.chumbok.security;
+package com.chumbok.security.config;
 
+import com.chumbok.security.properties.SecurityProperties;
+import com.chumbok.security.util.AuthTokenParser;
+import com.chumbok.security.util.EncryptionKeyUtil;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;

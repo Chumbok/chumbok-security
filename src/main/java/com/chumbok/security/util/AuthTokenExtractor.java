@@ -1,4 +1,4 @@
-package com.chumbok.security;
+package com.chumbok.security.util;
 
 import com.chumbok.testable.common.UrlUtil;
 import lombok.extern.slf4j.Slf4j;

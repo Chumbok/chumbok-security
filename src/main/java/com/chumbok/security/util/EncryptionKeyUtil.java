@@ -1,4 +1,4 @@
-package com.chumbok.security;
+package com.chumbok.security.util;
 
 import sun.security.rsa.RSAPrivateCrtKeyImpl;
 import sun.security.rsa.RSAPublicKeyImpl;

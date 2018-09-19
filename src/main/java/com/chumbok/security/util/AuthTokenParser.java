@@ -1,4 +1,4 @@
-package com.chumbok.security;
+package com.chumbok.security.util;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.ExpiredJwtException;
