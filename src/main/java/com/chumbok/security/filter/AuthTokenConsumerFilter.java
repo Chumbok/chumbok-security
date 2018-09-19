@@ -1,12 +1,17 @@
-package com.chumbok.security;
+package com.chumbok.security.filter;
 
+import com.chumbok.security.JwtAuthenticationToken;
+import com.chumbok.security.properties.SecurityProperties;
+import com.chumbok.security.util.AuthTokenExtractor;
+import com.chumbok.security.util.AuthTokenParser;
+import com.chumbok.security.util.SecurityUtil;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jws;
 import io.jsonwebtoken.lang.Assert;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
-import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.context.SecurityContext;
 import org.springframework.util.StringUtils;
 import org.springframework.web.filter.GenericFilterBean;
 
@@ -31,18 +36,22 @@ public class AuthTokenConsumerFilter extends GenericFilterBean {
     private final AuthTokenExtractor authTokenExtractor;
     private final AuthTokenParser authTokenParser;
     private final SecurityProperties securityProperties;
+    private final SecurityUtil securityUtil;
 
     /**
      * AuthTokenConsumerFilter constructor with default AuthTokenExtractor.
      *
      * @param authTokenParser
      */
-    public AuthTokenConsumerFilter(AuthTokenParser authTokenParser, SecurityProperties securityProperties) {
+    public AuthTokenConsumerFilter(AuthTokenParser authTokenParser, SecurityProperties securityProperties,
+                                   SecurityUtil securityUtil) {
         this.authTokenExtractor = new AuthTokenExtractor();
         this.authTokenParser = authTokenParser;
         this.securityProperties = securityProperties;
+        this.securityUtil = securityUtil;
         Assert.notNull(authTokenParser, "authTokenParser can not be null.");
         Assert.notNull(securityProperties, "securityProperties can not be null.");
+        Assert.notNull(securityUtil, "securityUtil can not be null.");
     }
 
     /**
@@ -52,13 +61,15 @@ public class AuthTokenConsumerFilter extends GenericFilterBean {
      * @param authTokenParser
      */
     public AuthTokenConsumerFilter(AuthTokenExtractor authTokenExtractor, AuthTokenParser authTokenParser,
-                                   SecurityProperties securityProperties) {
+                                   SecurityProperties securityProperties, SecurityUtil securityUtil) {
         this.authTokenExtractor = authTokenExtractor;
         this.authTokenParser = authTokenParser;
         this.securityProperties = securityProperties;
+        this.securityUtil = securityUtil;
         Assert.notNull(authTokenExtractor, "authTokenExtractor can not be null.");
         Assert.notNull(authTokenParser, "authTokenParser can not be null.");
         Assert.notNull(securityProperties, "securityProperties can not be null.");
+        Assert.notNull(securityUtil, "securityUtil can not be null.");
     }
 
     /**
@@ -167,8 +178,14 @@ public class AuthTokenConsumerFilter extends GenericFilterBean {
         log.debug("GrantedAuthority found in claimsJws. Prepared authorities - %s", authorities);
 
 
-        JwtAuthenticationToken jwtAuthenticationToken = new JwtAuthenticationToken(principal, authorities);
-        SecurityContextHolder.getContext().setAuthentication(jwtAuthenticationToken);
+        JwtAuthenticationToken jwtAuthenticationToken = securityUtil.newInstance(principal, authorities);
+
+        SecurityContext securityContext = securityUtil.getSecurityContext();
+        if (securityContext == null) {
+            log.debug("SecurityContext is null. Authentication is NOT set in SecurityContext.");
+        }
+
+        securityContext.setAuthentication(jwtAuthenticationToken);
         log.debug("JwtAuthenticationToken is successfully set in SecurityContext.");
     }
 }

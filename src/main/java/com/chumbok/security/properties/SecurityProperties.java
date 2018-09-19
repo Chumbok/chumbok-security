@@ -1,4 +1,4 @@
-package com.chumbok.security;
+package com.chumbok.security.properties;
 
 import lombok.Builder;
 import lombok.Getter;

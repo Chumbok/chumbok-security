@@ -1,5 +1,10 @@
-package com.chumbok.security;
+package com.chumbok.security.config;
 
+import com.chumbok.security.filter.AuthTokenConsumerFilter;
+import com.chumbok.security.http.Http403ForbiddenEntryPoint;
+import com.chumbok.security.properties.SecurityProperties;
+import com.chumbok.security.util.AuthTokenParser;
+import com.chumbok.security.util.SecurityUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.AuthenticationProvider;
@@ -93,10 +98,15 @@ public abstract class AbstractSecurityConfig extends WebSecurityConfigurerAdapte
             log.debug("securityProperties bean is NOT set. AuthTokenConsumerFilter is NOT set in Filter chain.");
         }
 
-        if (authTokenParser != null && securityProperties!= null) {
-            http.addFilterBefore(new AuthTokenConsumerFilter(authTokenParser, securityProperties),
+        SecurityUtil securityUtil = securityUtil();
+        if (securityUtil == null) {
+            log.debug("securityUtil bean is NOT set. AuthTokenConsumerFilter is NOT set in Filter chain.");
+        }
+
+        if (authTokenParser != null && securityProperties != null && securityUtil != null) {
+            http.addFilterBefore(new AuthTokenConsumerFilter(authTokenParser, securityProperties, securityUtil),
                     AbstractPreAuthenticatedProcessingFilter.class);
-            log.debug("authTokenParser and securityProperties bean is set. " +
+            log.debug("authTokenParser, securityProperties and securityUtil bean is set. " +
                     "AuthTokenConsumerFilter is set in Filter chain before AbstractPreAuthenticatedProcessingFilter");
         }
 
@@ -125,11 +135,19 @@ public abstract class AbstractSecurityConfig extends WebSecurityConfigurerAdapte
 
     /**
      * Allows to override PasswordEncoder.
-     *
      * @return
      */
     protected PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
+    }
+
+    /**
+     * Allows to override SecurityUtil.
+     *
+     * @return
+     */
+    protected SecurityUtil securityUtil() {
+        return new SecurityUtil();
     }
 
     /**
