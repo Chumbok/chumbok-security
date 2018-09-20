@@ -66,7 +66,7 @@ public abstract class AbstractSecurityConfig extends WebSecurityConfigurerAdapte
     @Override
     public void configure(WebSecurity web) throws Exception {
         web.ignoring().requestMatchers(PUBLIC_URLS);
-        log.debug("%s are ignored as PUBLIC_URLS", PUBLIC_URLS);
+        log.debug("{} are ignored as PUBLIC_URLS", PUBLIC_URLS);
     }
 
     @Override
