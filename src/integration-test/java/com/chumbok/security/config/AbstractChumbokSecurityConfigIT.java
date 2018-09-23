@@ -1,8 +1,5 @@
 package com.chumbok.security.config;
 
-import com.chumbok.security.properties.SecurityProperties;
-import com.chumbok.security.util.AuthTokenParser;
-import com.chumbok.security.util.EncryptionKeyUtil;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -10,10 +7,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.PropertySource;
 import org.springframework.http.MediaType;
-import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.FilterChainProxy;
@@ -26,8 +21,6 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.context.WebApplicationContext;
 
 import javax.servlet.http.Cookie;
-import java.io.File;
-import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -38,10 +31,10 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @RunWith(SpringRunner.class)
-@SpringBootTest(classes = AbstractSecurityConfigIT.Application.class)
+@SpringBootTest(classes = AbstractChumbokSecurityConfigIT.Application.class)
 @AutoConfigureMockMvc
 @ActiveProfiles("it")
-public class AbstractSecurityConfigIT {
+public class AbstractChumbokSecurityConfigIT {
 
     /**
      * JWT auth token created with private_key.der
@@ -107,46 +100,8 @@ public class AbstractSecurityConfigIT {
 
     }
 
-    @EnableWebSecurity
-    static class SecurityConfig extends AbstractSecurityConfig {
-
-        @Bean(name = "authenticationManager")
-        public AuthenticationManager authenticationManagerBean() throws Exception {
-            return super.authenticationManagerBean();
-        }
-
-        @Bean
-        public AuthTokenParser authTokenParser() throws IOException {
-            ClassLoader classLoader = getClass().getClassLoader();
-            File resource = new File(classLoader.getResource("public_key.der").getFile());
-            EncryptionKeyUtil encryptionKeyUtil = new EncryptionKeyUtil();
-            return new AuthTokenParser(encryptionKeyUtil.loadPublicKey(resource.toPath().toString()));
-        }
-
-        @Autowired
-        @Override
-        protected void setAuthTokenParser(AuthTokenParser authTokenParser) {
-            super.setAuthTokenParser(authTokenParser);
-        }
-
-        @Bean
-        public SecurityProperties securityProperties() {
-            return SecurityProperties.builder()
-                    .enable(true)
-                    .assertOrgWith("Chumbok")
-                    .assertTenant(true)
-                    .assertTenantWith("Chumbok")
-                    .build();
-        }
-
-        @Autowired
-        @Override
-        protected void setSecurityProperties(SecurityProperties securityProperties) {
-            super.setSecurityProperties(securityProperties);
-        }
-    }
-
     @SpringBootApplication
+    @PropertySource("classpath:application.yml")
     @RestController
     static class Application {
 

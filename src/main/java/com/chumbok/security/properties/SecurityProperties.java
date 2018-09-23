@@ -1,6 +1,5 @@
 package com.chumbok.security.properties;
 
-import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -9,13 +8,17 @@ import lombok.Setter;
  */
 @Getter
 @Setter
-@Builder
 public class SecurityProperties {
 
     /**
      * Flag to enable Chumbok Security.
      */
     private boolean enable;
+
+    /**
+     * JWT access token signing key.
+     */
+    private String tokenSigningPublicKeyPath;
 
     /**
      * assertOrgWith is a String which going to be validated with access token org.

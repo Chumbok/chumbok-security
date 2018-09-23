@@ -1,0 +1,2 @@
+org.springframework.boot.autoconfigure.EnableAutoConfiguration=\
+com.chumbok.security.config.ChumbokSecurityAutoConfig,com.chumbok.security.config.ChumbokSecurityConfig

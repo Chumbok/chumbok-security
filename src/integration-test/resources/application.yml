@@ -1,0 +1,13 @@
+spring:
+  profiles: it
+
+com:
+  chumbok:
+    security:
+      enable: true
+      assert-org-with: Chumbok
+      assert-tenant: true
+      assert-tenant-with: Chumbok
+      token-signing-public-key-path: "classpath:public_key.der"
+
+
