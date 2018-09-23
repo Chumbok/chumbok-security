@@ -11,7 +11,7 @@
 
     <groupId>com.chumbok</groupId>
     <artifactId>chumbok-security</artifactId>
-    <version>3.0.0-SNAPSHOT</version>
+    <version>3.0.0</version>
     <packaging>jar</packaging>
 
     <name>Chumbok Security</name>
