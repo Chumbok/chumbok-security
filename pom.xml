@@ -6,7 +6,7 @@
     <parent>
         <groupId>com.chumbok</groupId>
         <artifactId>chumbok-starter-parent</artifactId>
-        <version>1.1.0</version>
+        <version>3.0.0</version>
     </parent>
 
     <groupId>com.chumbok</groupId>
@@ -22,7 +22,11 @@
         <developerConnection>scm:git:https://github.com/ChumbokIT/${project.artifactId}.git</developerConnection>
         <url>https://github.com/ChumbokIT/${project.artifactId}</url>
       <tag>HEAD</tag>
-  </scm>
+    </scm>
+
+    <properties>
+        <testable-common.version>1.0.0</testable-common.version>
+    </properties>
 
     <dependencies>
 
@@ -81,11 +85,6 @@
         <plugins>
 
             <plugin>
-                <groupId>org.springframework.boot</groupId>
-                <artifactId>spring-boot-maven-plugin</artifactId>
-            </plugin>
-
-            <plugin>
                 <groupId>org.jacoco</groupId>
                 <artifactId>jacoco-maven-plugin</artifactId>
             </plugin>
@@ -98,35 +97,6 @@
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>build-helper-maven-plugin</artifactId>
-                <executions>
-                    <execution>
-                        <id>add-test-source</id>
-                        <phase>process-resources</phase>
-                        <goals>
-                            <goal>add-test-source</goal>
-                        </goals>
-                        <configuration>
-                            <sources>
-                                <source>src/integration-test/java</source>
-                            </sources>
-                        </configuration>
-                    </execution>
-                    <execution>
-                        <id>add-resource</id>
-                        <phase>generate-resources</phase>
-                        <goals>
-                            <goal>add-resource</goal>
-                        </goals>
-                        <configuration>
-                            <resources>
-                                <resource>
-                                    <directory>src/integration-test/resources</directory>
-                                    <targetPath>../test-classes</targetPath>
-                                </resource>
-                            </resources>
-                        </configuration>
-                    </execution>
-                </executions>
             </plugin>
 
             <plugin>

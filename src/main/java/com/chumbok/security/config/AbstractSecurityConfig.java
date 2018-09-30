@@ -18,6 +18,7 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.authentication.preauth.AbstractPreAuthenticatedProcessingFilter;
+import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 import org.springframework.security.web.util.matcher.OrRequestMatcher;
 import org.springframework.security.web.util.matcher.RequestMatcher;
@@ -79,6 +80,8 @@ public abstract class AbstractSecurityConfig extends WebSecurityConfigurerAdapte
 
         http.httpBasic().disable()
                 .headers().frameOptions().sameOrigin()
+                .and()
+                .csrf().csrfTokenRepository(new CookieCsrfTokenRepository())
                 .and()
 
                 .exceptionHandling().authenticationEntryPoint(new Http403ForbiddenEntryPoint())
