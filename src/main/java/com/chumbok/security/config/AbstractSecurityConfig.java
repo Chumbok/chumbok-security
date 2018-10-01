@@ -81,7 +81,7 @@ public abstract class AbstractSecurityConfig extends WebSecurityConfigurerAdapte
         http.httpBasic().disable()
                 .headers().frameOptions().sameOrigin()
                 .and()
-                .csrf().csrfTokenRepository(new CookieCsrfTokenRepository())
+                .csrf().csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse())
                 .and()
 
                 .exceptionHandling().authenticationEntryPoint(new Http403ForbiddenEntryPoint())
