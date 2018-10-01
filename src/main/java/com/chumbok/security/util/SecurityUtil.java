@@ -59,7 +59,7 @@ public class SecurityUtil {
     }
 
     @Getter
-    static class AuthenticatedUser {
+    public static class AuthenticatedUser {
 
         private final String org;
         private final String tenant;
