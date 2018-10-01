@@ -66,6 +66,14 @@ public class SecurityUtil {
         private final String username;
         private final Collection<? extends GrantedAuthority> authorities;
 
+        public AuthenticatedUser(String org, String tenant, String username,
+                                 Collection<? extends GrantedAuthority> authorities) {
+            this.org = org;
+            this.tenant = tenant;
+            this.username = username;
+            this.authorities = authorities;
+        }
+
         public AuthenticatedUser(Authentication authentication) {
 
             if (authentication == null || !authentication.isAuthenticated()) {
