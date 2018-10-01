@@ -74,7 +74,7 @@ public class SecurityUtil {
             this.authorities = authorities;
         }
 
-        public AuthenticatedUser(Authentication authentication) {
+        private AuthenticatedUser(Authentication authentication) {
 
             if (authentication == null || !authentication.isAuthenticated()) {
                 throw new RuntimeException("Authentication must not be null.");
