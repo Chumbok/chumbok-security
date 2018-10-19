@@ -1,13 +1,11 @@
 package com.chumbok.security.properties;
 
-import lombok.Getter;
-import lombok.Setter;
+import lombok.Data;
 
 /**
  * Data class to read security properties from application yaml.
  */
-@Getter
-@Setter
+@Data
 public class SecurityProperties {
 
     /**

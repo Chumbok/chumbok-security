@@ -17,12 +17,14 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.authentication.preauth.AbstractPreAuthenticatedProcessingFilter;
 import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 import org.springframework.security.web.util.matcher.OrRequestMatcher;
 import org.springframework.security.web.util.matcher.RequestMatcher;
 import org.springframework.util.Assert;
+import org.springframework.web.filter.CorsFilter;
 
 /**
  * AbstractSecurityConfig provides all required configuration.
@@ -45,6 +47,7 @@ public abstract class AbstractSecurityConfig extends WebSecurityConfigurerAdapte
     private AuthTokenParser authTokenParser;
     private SecurityProperties securityProperties;
     private UserDetailsService userDetailsService;
+    private CorsFilter corsFilter;
 
     public AbstractSecurityConfig() {
         super();
@@ -112,6 +115,11 @@ public abstract class AbstractSecurityConfig extends WebSecurityConfigurerAdapte
             log.debug("authTokenParser, securityProperties and securityUtil bean is set. " +
                     "AuthTokenConsumerFilter is set in Filter chain before AbstractPreAuthenticatedProcessingFilter");
         }
+
+        if (corsFilter != null) {
+            http.addFilterBefore(corsFilter, UsernamePasswordAuthenticationFilter.class);
+        }
+
 
         http.authorizeRequests().anyRequest().authenticated();
 
@@ -182,4 +190,15 @@ public abstract class AbstractSecurityConfig extends WebSecurityConfigurerAdapte
         Assert.notNull(securityProperties, "securityProperties cannot be null");
         this.securityProperties = securityProperties;
     }
+
+    /**
+     * Allow to set CorsFilter.
+     *
+     * @param corsFilters
+     */
+    protected void setCorsFilters(CorsFilter corsFilters) {
+        Assert.notNull(corsFilters, "corsFilters cannot be null");
+        this.corsFilter = corsFilters;
+    }
+
 }
