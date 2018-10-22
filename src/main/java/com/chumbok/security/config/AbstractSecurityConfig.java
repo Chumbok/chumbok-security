@@ -17,7 +17,7 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.security.web.access.channel.ChannelProcessingFilter;
 import org.springframework.security.web.authentication.preauth.AbstractPreAuthenticatedProcessingFilter;
 import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
@@ -117,7 +117,8 @@ public abstract class AbstractSecurityConfig extends WebSecurityConfigurerAdapte
         }
 
         if (corsFilter != null) {
-            http.addFilterBefore(corsFilter, UsernamePasswordAuthenticationFilter.class);
+            http.cors();
+            http.addFilterBefore(corsFilter, ChannelProcessingFilter.class);
         }
 
 
