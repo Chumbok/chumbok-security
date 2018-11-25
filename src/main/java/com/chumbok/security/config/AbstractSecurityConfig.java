@@ -39,7 +39,7 @@ import org.springframework.web.filter.CorsFilter;
 public abstract class AbstractSecurityConfig extends WebSecurityConfigurerAdapter {
 
     private static final RequestMatcher PUBLIC_URLS = new OrRequestMatcher(
-            new AntPathRequestMatcher("/public/*"),
+            new AntPathRequestMatcher("/public/**"),
             new AntPathRequestMatcher("/login"),
             new AntPathRequestMatcher("/ping"),
             new AntPathRequestMatcher("/version"));
