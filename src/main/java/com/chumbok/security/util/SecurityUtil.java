@@ -11,7 +11,7 @@ import java.util.Collection;
 import java.util.Optional;
 
 /**
- * SecurityUtil
+ * SecurityUtil provides logged in user's information and generate jwt tokens.
  */
 public class SecurityUtil {
 
@@ -56,6 +56,37 @@ public class SecurityUtil {
         } catch (Exception ex) {
         }
         return Optional.ofNullable(authenticatedUser);
+    }
+
+    /**
+     * Return optional logged in user's username
+     * @return
+     */
+    public Optional<String> findAuthenticatedUsername() {
+        Optional<AuthenticatedUser> authenticatedUser = getAuthenticatedUser();
+        if (authenticatedUser.isPresent() && authenticatedUser.get().getUsername() != null) {
+            return Optional.of(authenticatedUser.get().getUsername());
+        }
+        return Optional.empty();
+    }
+
+    /**
+     * Return logged in user's username
+     * @return
+     */
+    public String getAuthenticatedUsername() {
+        Optional<AuthenticatedUser> authenticatedUser = getAuthenticatedUser();
+        if (!authenticatedUser.isPresent() || authenticatedUser.get().getUsername() == null) {
+            throw new IllegalStateException("Security Context does not have user.");
+        }
+        return authenticatedUser.get().getUsername();
+    }
+
+    /**
+     * Return a boolean to signal if user is logged in.
+     */
+    public boolean isLoggedIn() {
+        return getAuthenticatedUser().isPresent()? true : false;
     }
 
     @Getter
