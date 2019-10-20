@@ -26,14 +26,17 @@ import org.springframework.security.web.util.matcher.RequestMatcher;
 import org.springframework.util.Assert;
 import org.springframework.web.filter.CorsFilter;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * AbstractSecurityConfig provides all required configuration.
  * <p>
- * In presence of UserDetailsService bean, it configures DaoAuthenticationProvider
- * and authProvider() also let you set any auth provider.
+ * In presence of UserDetailsService bean, it configures DaoAuthenticationProvider and authProvider() also let you set
+ * any auth provider.
  * <p>
- * In presence of AuthTokenParser, auth token is extracted from HTTP request header or cookie
- * and set Authentication in SecurityContext.
+ * In presence of AuthTokenParser, auth token is extracted from HTTP request header or cookie and set Authentication in
+ * SecurityContext.
  */
 @Slf4j
 public abstract class AbstractSecurityConfig extends WebSecurityConfigurerAdapter {
@@ -48,6 +51,7 @@ public abstract class AbstractSecurityConfig extends WebSecurityConfigurerAdapte
     private SecurityProperties securityProperties;
     private UserDetailsService userDetailsService;
     private CorsFilter corsFilter;
+    private List<RequestMatcher> ignoringRequestMatchers = new ArrayList<>();
 
     public AbstractSecurityConfig() {
         super();
@@ -60,6 +64,29 @@ public abstract class AbstractSecurityConfig extends WebSecurityConfigurerAdapte
         } else {
             log.debug("userDetailsService bean is not set. DaoAuthenticationProvider is not set.");
         }
+    }
+
+    /**
+     * Allows to set UserDetailsService in DaoAuthenticationProvider.
+     *
+     * @param userDetailsService
+     * @return
+     */
+    protected AuthenticationProvider authProvider(UserDetailsService userDetailsService) {
+        DaoAuthenticationProvider provider = new DaoAuthenticationProvider();
+        provider.setUserDetailsService(userDetailsService);
+        provider.setPasswordEncoder(passwordEncoder());
+        provider.setForcePrincipalAsString(true);
+        return provider;
+    }
+
+    /**
+     * Allows to override PasswordEncoder.
+     *
+     * @return
+     */
+    protected PasswordEncoder passwordEncoder() {
+        return new BCryptPasswordEncoder();
     }
 
     @Override
@@ -84,8 +111,6 @@ public abstract class AbstractSecurityConfig extends WebSecurityConfigurerAdapte
         http.httpBasic().disable()
                 .headers().frameOptions().sameOrigin()
                 .and()
-                .csrf().csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse())
-                .and()
 
                 .exceptionHandling().authenticationEntryPoint(new Http403ForbiddenEntryPoint())
                 .and()
@@ -109,48 +134,43 @@ public abstract class AbstractSecurityConfig extends WebSecurityConfigurerAdapte
             log.debug("securityUtil bean is NOT set. AuthTokenConsumerFilter is NOT set in Filter chain.");
         }
 
+        if (securityProperties != null && !securityProperties.isDisableCsrf()) {
+            http.csrf()
+                    .csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse())
+                    .requireCsrfProtectionMatcher(new CsrfRequestMatcher());
+            log.info("Enabling CSRF check.");
+        } else {
+            http.csrf().disable();
+            log.info("CSRF check is disabled in securityProperties.");
+        }
+
         if (authTokenParser != null && securityProperties != null && securityUtil != null) {
-            http.addFilterBefore(new AuthTokenConsumerFilter(authTokenParser, securityProperties, securityUtil),
-                    AbstractPreAuthenticatedProcessingFilter.class);
             log.debug("authTokenParser, securityProperties and securityUtil bean is set. " +
                     "AuthTokenConsumerFilter is set in Filter chain before AbstractPreAuthenticatedProcessingFilter");
+            http.addFilterBefore(new AuthTokenConsumerFilter(authTokenParser, securityProperties, securityUtil),
+                    AbstractPreAuthenticatedProcessingFilter.class);
         }
 
-        if (corsFilter != null) {
+        if (securityProperties != null && corsFilter != null && !securityProperties.isDisableCors()) {
+            log.info("Enabling CORS check.");
             http.cors();
             http.addFilterBefore(corsFilter, ChannelProcessingFilter.class);
+        } else {
+            log.info("CORS check is disabled in securityProperties.");
         }
-
 
         http.authorizeRequests().anyRequest().authenticated();
 
-        log.debug("Csrf is ignored for /login, /logout, /logout and /refresh.");
-        http.csrf().ignoringAntMatchers("/login");
-        http.csrf().ignoringAntMatchers("/logout");
-        http.csrf().ignoringAntMatchers("/refresh");
+        log.debug("Csrf is ignored for /login, /logout and /refresh.");
+        http.csrf().ignoringAntMatchers(new String[]{"/login", "/logout", "/refresh"});
 
-    }
-
-    /**
-     * Allows to set UserDetailsService in DaoAuthenticationProvider.
-     *
-     * @param userDetailsService
-     * @return
-     */
-    protected AuthenticationProvider authProvider(UserDetailsService userDetailsService) {
-        DaoAuthenticationProvider provider = new DaoAuthenticationProvider();
-        provider.setUserDetailsService(userDetailsService);
-        provider.setPasswordEncoder(passwordEncoder());
-        provider.setForcePrincipalAsString(true);
-        return provider;
-    }
-
-    /**
-     * Allows to override PasswordEncoder.
-     * @return
-     */
-    protected PasswordEncoder passwordEncoder() {
-        return new BCryptPasswordEncoder();
+        if (securityProperties != null && securityProperties.getIgnoredCsrfPaths() != null) {
+            log.debug("Csrf is ignored for {}", securityProperties.getIgnoredCsrfPaths());
+            String[] ignoredPaths = securityProperties.getIgnoredCsrfPaths().split(",");
+            for (String ignoredPath : ignoredPaths) {
+                http.csrf().ignoringAntMatchers(ignoredPath);
+            }
+        }
     }
 
     /**
@@ -200,6 +220,15 @@ public abstract class AbstractSecurityConfig extends WebSecurityConfigurerAdapte
     protected void setCorsFilters(CorsFilter corsFilters) {
         Assert.notNull(corsFilters, "corsFilters cannot be null");
         this.corsFilter = corsFilters;
+    }
+
+    /**
+     * Allow adding request matcher for CSRF.
+     *
+     * @param requestMatcher
+     */
+    protected void addIgnoringRequestMatcher(RequestMatcher requestMatcher) {
+        ignoringRequestMatchers.add(requestMatcher);
     }
 
 }

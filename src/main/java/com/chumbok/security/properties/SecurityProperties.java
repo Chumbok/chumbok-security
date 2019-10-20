@@ -33,4 +33,19 @@ public class SecurityProperties {
      */
     private String assertTenantWith;
 
+    /**
+     * Flag to disable CSRF.
+     */
+    private boolean disableCsrf;
+
+    /**
+     * Comma separated paths that needed to be ignored in CSRF filter.
+     */
+    private String ignoredCsrfPaths;
+
+    /**
+     * Flag to disable CORS.
+     */
+    private boolean disableCors;
+
 }
